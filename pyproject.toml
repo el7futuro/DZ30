@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "djangodz27"
+version = "0.1.0"
+description = ""
+authors = ["el7futuro <el7futuro@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+django = "^4.1.5"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
