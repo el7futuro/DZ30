@@ -22,9 +22,9 @@ from djangoDZ27 import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('ad/', include('ads.urls.ad')),
-    path('cat/', include('ads.urls.cat')),
-    path('user/', include('users.urls'))
+    path('', include('ads.urls.ad')),
+    path('', include('ads.urls.cat')),
+    path('', include('users.urls'))
 ]
 
 if settings.DEBUG:
