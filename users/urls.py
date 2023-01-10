@@ -3,8 +3,8 @@ from django.urls import path
 from users.views import UserView, UserDetail, UserCreateView, UserDeleteView, UserUpdateView, LocationViewSet
 from rest_framework import routers
 
-# router = routers.SimpleRouter()
-# router.register('location', LocationViewSet)
+router = routers.SimpleRouter()
+router.register('location', LocationViewSet)
 urlpatterns = [
 
     path('user/', UserView.as_view()),
@@ -14,4 +14,4 @@ urlpatterns = [
     path('user/<int:pk>/delete/', UserDeleteView.as_view()),
 
 ]
-# urlpatterns += router.urls
+urlpatterns += router.urls

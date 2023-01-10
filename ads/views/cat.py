@@ -4,7 +4,7 @@ from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import ListView, DetailView, UpdateView, DeleteView
+from django.views.generic import ListView, DetailView, UpdateView, DeleteView, CreateView
 
 from ads.models import Category
 
@@ -45,9 +45,28 @@ class CategoryViewDetail(DetailView):
         return JsonResponse({"name": self.object.name
                              }, safe=False)
 
+@method_decorator(csrf_exempt, name='dispatch')
+class CategoryCreateView(CreateView):
+    model = Category
+    fields = ["name"]
+
+    def post(self, request, *args, **kwargs):
+        category_data = json.loads(request.body)
+
+        category = Category.objects.create(
+            name=category_data["name"]
+        )
+
+        return JsonResponse(
+            {
+                "id": category.id,
+                "text": category.name
+            }
+        )
+
 
 @method_decorator(csrf_exempt, name='dispatch')
-class CategoryUpadeteView(UpdateView):
+class CategoryUpdateView(UpdateView):
     model = Category
     fields = '__all__'
 
