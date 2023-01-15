@@ -31,26 +31,24 @@ class UserDetailSerializer(serializers.ModelSerializer):
 
 class UserCreateSerializer(serializers.ModelSerializer):
     location = serializers.SlugRelatedField(required=False,
-        many=True,
-        queryset=Location.objects.values('name'),
-        slug_field='name'
-    )
+                                            many=True,
+                                            queryset=Location.objects.values('name'),
+                                            slug_field='name'
+                                            )
 
     def is_valid(self, *, raise_exception=False):
         self._location = self.initial_data.pop('location', [])
         return super().is_valid(raise_exception=raise_exception)
 
-
     def create(self, validated_data):
-        new_user=User.objects.create(**validated_data)
-        for loc in self._location:
-            locations, _ = Location.objects.get_or_create(name=loc)
+        new_user = User.objects.create(**validated_data)
+        for locate in self._location:
+            locations, _ = Location.objects.get_or_create(name=locate)
             new_user.location.add(locations)
         return new_user
 
     class Meta:
         model = User
-        exclude = ['password']
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):

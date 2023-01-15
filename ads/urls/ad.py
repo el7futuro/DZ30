@@ -1,16 +1,17 @@
 from django.urls import path
 
 
-from ads.views.ad import AdsView, AdsViewDetail, AdUpadeteView, AdDeleteView, AdUploadImageView
+from ads.views.ad import AdListView, AdDetailView, AdUpdateView, AdDeleteView, AdImageUpdate
 
 
 urlpatterns = [
 
 
-    path('ad/', AdsView.as_view(), name='AdsView'),
-    path('ad/<int:pk>', AdsViewDetail.as_view(), name='AdsViewDetail'),
-    path('ad/<int:pk>/update', AdUpadeteView.as_view()),
+    path('ad/', AdListView.as_view(), name='AdListView'),
+    path('ad/<int:pk>', AdDetailView.as_view(), name='AdDetailView'),
+    path('ad/<int:pk>/update', AdUpdateView.as_view()),
     path('ad/<int:pk>/delete', AdDeleteView.as_view()),
-    path('ad/<int:pk>/upload_image/', AdUploadImageView.as_view())
+    path('ad/<int:pk>/upload_image/', AdImageUpdate.as_view())
 
 ]
+

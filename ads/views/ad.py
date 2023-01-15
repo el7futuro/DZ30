@@ -1,36 +1,49 @@
-import json
-
 from django.core.paginator import Paginator
-from django.http import JsonResponse
-from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import ListView, DetailView, UpdateView, DeleteView
-
+from django.utils.decorators import method_decorator
+from django.http import JsonResponse
+from django.views.generic import UpdateView
+from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, UpdateAPIView, DestroyAPIView
+from ads.serializers import AdListSerializer, AdCreateSerializer, AdUpdateSerializer, AdDestroySerializer
 from ads.models import Ads
 
 
-class AdsView(ListView):
-    model = Ads
+def root(request):
+    return JsonResponse({"status": "ok"}, status=200)
+
+
+class AdListView(ListAPIView):
     queryset = Ads.objects.all()
+    serializer_class = AdListSerializer
 
     def get(self, request, *args, **kwargs):
-        super().get(request, *args, **kwargs)
-        self.object_list = self.object_list.select_related('author').order_by(
-            "-price")
-        cat = request.GET.getlist('cat')
-        if cat:
-            self.object_list = self.object_list.filter(category__in=cat)
-        text = request.GET.get('text')
-        if text:
-            self.object_list = self.object_list.filter(description__icontains=text)
-        loc = request.GET.get('location')
-        if loc:
-            self.object_list = self.object_list.filter(author__location__name__icontains=loc)
-        min = request.GET.get('price_from')
-        max = request.GET.get('price_to')
-        if min and max:
-            self.object_list = self.object_list.filter(price__range=(min, max))
-        paginator = Paginator(self.object_list, 10)
+        ad_text = request.GET.get('text', None)
+
+        if ad_text:
+            self.queryset = self.queryset.filter(
+                name__icontains=ad_text
+            )
+
+        cat_query = request.GET.get('cat', None)
+        if cat_query:
+            self.queryset = self.queryset.filter(
+                category_id=cat_query
+            )
+
+        location_name = request.GET.get('location', None)
+        if location_name:
+            self.queryset = self.queryset.filter(
+                author__location__name__icontains=location_name
+            )
+
+        price_from = request.GET.get('price_from', None)
+        price_to = request.GET.get('price_to', None)
+        if price_from or price_to:
+            self.queryset = self.queryset.filter(
+                price__range=(price_from, price_to.rstrip('/'))
+            )
+
+        paginator = Paginator(self.queryset, 10)
         num_pages = request.GET.get('page')
         pat_obj = paginator.get_page(num_pages)
         ads = []
@@ -53,78 +66,44 @@ class AdsView(ListView):
         return JsonResponse(response, safe=False)
 
 
-@method_decorator(csrf_exempt, name='dispatch')
-class AdsViewDetail(DetailView):
-    model = Ads
-
-    def get(self, request, *args, **kwargs):
-        super().get(self, request, *args, **kwargs)
-        self.object = self.get_object()
-        return JsonResponse({'id': self.object.id,
-                             'name': self.object.name,
-                             'author': self.object.author.first_name,
-                             'price': self.object.price,
-                             'description': self.object.description,
-                             'is_published': self.object.is_published}, safe=False)
+class AdCreateView(CreateAPIView):
+    queryset = Ads.objects.all()
+    serializer_class = AdCreateSerializer
 
 
-@method_decorator(csrf_exempt, name='dispatch')
-class AdUpadeteView(UpdateView):
-    model = Ads
-    fields = '__all__'
-
-    def patch(self, request, *args, **kwargs):
-        super().post(request, *args, **kwargs)
-        ad_data = json.loads(request.body)
-        if 'name' in ad_data:
-            self.object.name = ad_data['name']
-        if 'price' in ad_data:
-            self.object.price = ad_data['price']
-        if 'description' in ad_data:
-            self.object.description = ad_data['description']
-
-        self.object.save()
-        return JsonResponse({
-            "id": self.object.id,
-            "name": self.object.name,
-            "author_id": self.object.author_id,
-            "author": self.object.author.first_name,
-            "price": self.object.price,
-            "description": self.object.description,
-            "is_published": self.object.is_published,
-            "category_id": self.object.category_id,
-            "image": self.object.image.url if self.object.image else None,
-        })
+class AdDetailView(RetrieveAPIView):
+    queryset = Ads.objects.all()
+    serializer_class = AdListSerializer
 
 
-@method_decorator(csrf_exempt, name="dispatch")
-class AdDeleteView(DeleteView):
-    model = Ads
-    success_url = '/'
-
-    def delete(self, request, *args, **kwargs):
-        super().delete(request, *args, **kwargs)
-        return JsonResponse({'status': 'ok'}, safe=False)
+class AdUpdateView(UpdateAPIView):
+    queryset = Ads.objects.all()
+    serializer_class = AdUpdateSerializer
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class AdUploadImageView(UpdateView):
+class AdImageUpdate(UpdateView):
     model = Ads
-    fields = '__all__'
+    fields = ["name", "author", "price", "description", "address", "is_published", "image", "category_id"]
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
-        self.object.image = request.FILES.get("image", None)
+
+        self.object.image = request.FILES["image"]
         self.object.save()
 
         return JsonResponse({
             "id": self.object.id,
             "name": self.object.name,
-            "author_id": self.object.author_id,
-            "author": self.object.author.first_name,
+            "author_id": self.object.author,
             "price": self.object.price,
             "description": self.object.description,
             "is_published": self.object.is_published,
             "category_id": self.object.category_id,
-            "image": self.object.image.url if self.object.image else None,
-        })
+            "image": self.object.image.url if self.object.image else None
+        }, status=200)
+
+
+class AdDeleteView(DestroyAPIView):
+    queryset = Ads.objects.all()
+    serializer_class = AdDestroySerializer
