@@ -18,13 +18,17 @@ from django.contrib import admin
 from django.urls import path, include
 
 # from ads import views
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
 from djangoDZ27 import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('ads.urls.ad')),
     path('', include('ads.urls.cat')),
-    path('', include('users.urls'))
+    path('', include('users.urls')),
+    path('', include('ads.urls.sel')),
+
 ]
 
 if settings.DEBUG:

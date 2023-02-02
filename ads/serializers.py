@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from ads.models import Ads
+from ads.models import Ads, Selection
 from users.models import Location, User
 
 
@@ -88,3 +88,22 @@ class AdDestroySerializer(serializers.ModelSerializer):
         fields = ["id"]
 
 
+class SelectionListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Selection
+        fields = ["id", "name"]
+
+
+class SelectionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Selection
+        fields = '__all__'
+
+
+class SelectionDetailSerializer(serializers.ModelSerializer):
+    owner = serializers.SlugRelatedField(slug_field="username", queryset=User.objects.all())
+    items = AdListSerializer(many=True)
+
+    class Meta:
+        model = Selection
+        fields = '__all__'

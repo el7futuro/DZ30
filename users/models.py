@@ -1,24 +1,22 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 
 
-class User(models.Model):
+class User(AbstractUser):
     ROLE = [
         ("member", "пользователь"),
         ("admin", "администратор"),
         ("moderator", "модератор")
     ]
-    first_name = models.CharField(max_length=20, null=True)
-    last_name = models.CharField(max_length=20, null=True, blank=True)
-    username = models.CharField(max_length=20, unique=True)
-    password = models.CharField(max_length=20)
+
     role = models.CharField(max_length=9, choices=ROLE, default="member")
-    age = models.PositiveSmallIntegerField()
     location = models.ManyToManyField('Location')
+    age = models.PositiveSmallIntegerField()
 
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
-        ordering = ['username']
+
 
     def __str__(self):
         return self.username

@@ -30,6 +30,7 @@ class UserDetailSerializer(serializers.ModelSerializer):
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
     location = serializers.SlugRelatedField(required=False,
                                             many=True,
                                             queryset=Location.objects.values('name'),
@@ -42,6 +43,8 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         new_user = User.objects.create(**validated_data)
+        new_user.set_password(validated_data["password"])
+        new_user.save()
         for locate in self._location:
             locations, _ = Location.objects.get_or_create(name=locate)
             new_user.location.add(locations)
@@ -49,6 +52,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
+        fields = '__all__'
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
